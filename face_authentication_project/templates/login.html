@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h2>Login</h2>
+    
+    <!-- Traditional Login -->
+    <form method="POST">
+        <input type="text" name="username" required placeholder="Username">
+        <input type="password" name="password" required placeholder="Password">
+        <input type="submit" value="Login">
+    </form>
+
+    <!-- Face Authentication -->
+    <h3>Face Authentication</h3>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button onclick="captureImage()">Authenticate</button>
+
+    <script>
+        const video = document.getElementById('video');
+        
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Camera access error: ", err);
+            });
+
+        function captureImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            axios.post('/login', { image: imageData })
+                .then(response => {
+                    if (response.data.success) {
+                        alert('Login successful for ' + response.data.username);
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('Face not recognized');
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                });
+        }
+    </script>
+</body>
+</html>
